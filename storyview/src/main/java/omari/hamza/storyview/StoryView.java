@@ -22,6 +22,7 @@ import androidx.fragment.app.FragmentManager;
 import androidx.viewpager.widget.ViewPager;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.RequestManager;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -89,6 +90,8 @@ public class StoryView extends DialogFragment implements StoriesProgressView.Sto
 
     private boolean isRtl;
 
+    public RequestManager requestManager;
+
     private StoryView() {
     }
 
@@ -118,7 +121,7 @@ public class StoryView extends DialogFragment implements StoriesProgressView.Sto
         storiesProgressView.setStoriesCount(storiesList.size());
         storiesProgressView.setStoryDuration(duration);
         updateHeading();
-        mViewPager.setAdapter(new ViewPagerAdapter(storiesList, getContext(), this));
+        mViewPager.setAdapter(new ViewPagerAdapter(storiesList, getContext(), requestManager, this));
     }
 
     private void readArguments() {
@@ -262,9 +265,10 @@ public class StoryView extends DialogFragment implements StoriesProgressView.Sto
         if (storyHeaderInfo.getTitleIconUrl() != null) {
             titleCardView.setVisibility(View.VISIBLE);
             if (getContext() == null) return;
-            Glide.with(getContext())
-                    .load(storyHeaderInfo.getTitleIconUrl())
-                    .into(titleIconImageView);
+            if (requestManager == null) {
+                requestManager = Glide.with(getContext());
+            }
+            requestManager.load(storyHeaderInfo.getTitleIconUrl()).into(titleIconImageView);
         } else {
             titleCardView.setVisibility(View.GONE);
             isHeadlessLogoMode = true;
@@ -422,6 +426,7 @@ public class StoryView extends DialogFragment implements StoriesProgressView.Sto
         private ArrayList<StoryViewHeaderInfo> headingInfoList;
         private StoryClickListeners storyClickListeners;
         private OnStoryChangedCallback onStoryChangedCallback;
+        private RequestManager requestManager;
 
         public Builder(FragmentManager fragmentManager) {
             this.fragmentManager = fragmentManager;
@@ -459,12 +464,20 @@ public class StoryView extends DialogFragment implements StoriesProgressView.Sto
             return this;
         }
 
+        public Builder setRequestManager(RequestManager requestManager) {
+            this.requestManager = requestManager;
+            return this;
+        }
+
         public Builder build() {
             if (storyView != null) {
                 Log.e(TAG, "The StoryView has already been built!");
                 return this;
             }
             storyView = new StoryView();
+            if (requestManager != null) {
+                storyView.requestManager = requestManager;
+            }
             bundle.putSerializable(HEADER_INFO_KEY, headingInfoList != null ? headingInfoList : storyViewHeaderInfo);
             storyView.setArguments(bundle);
             if (storyClickListeners != null) {

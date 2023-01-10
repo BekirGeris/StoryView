@@ -15,6 +15,7 @@ import androidx.annotation.Nullable;
 import androidx.viewpager.widget.PagerAdapter;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.RequestManager;
 import com.bumptech.glide.load.DataSource;
 import com.bumptech.glide.load.engine.GlideException;
 import com.bumptech.glide.request.RequestListener;
@@ -32,10 +33,12 @@ public class ViewPagerAdapter extends PagerAdapter {
     private Context context;
     private StoryCallbacks storyCallbacks;
     private boolean storiesStarted = false;
+    private RequestManager requestManager;
 
-    public ViewPagerAdapter(ArrayList<MyStory> images, Context context, StoryCallbacks storyCallbacks) {
+    public ViewPagerAdapter(ArrayList<MyStory> images, Context context, RequestManager requestManager, StoryCallbacks storyCallbacks) {
         this.images = images;
         this.context = context;
+        this.requestManager = requestManager;
         this.storyCallbacks = storyCallbacks;
     }
 
@@ -74,8 +77,7 @@ public class ViewPagerAdapter extends PagerAdapter {
             });
         }
 
-        Glide.with(context)
-                .load(currentStory.getUrl())
+        requestManager.load(currentStory.getUrl())
                 .listener(new RequestListener<Drawable>() {
                     @Override
                     public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
